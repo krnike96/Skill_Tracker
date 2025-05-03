@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <h2>{{ user.username }}'s Profile</h2>
+        <div class="profile-actions">
+            <a href="{{ url_for('export_profile') }}" class="btn primary" download="skill_profile.json">
+                <i class="material-icons">download</i> Export Profile
+            </a>
+        </div>
+    </div>
+
+    <div class="profile-details">
+        <div class="detail-card">
+            <h3>User Information</h3>
+            <p><strong>Username:</strong> {{ user.username }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+        </div>
+    </div>
+
+    <div class="skills-summary">
+        <h3>Skills Summary</h3>
+        {% if skills %}
+            <div class="skills-grid">
+                {% for skill in skills %}
+                    <div class="skill-card">
+                        <div class="skill-header">
+                            <h4>{{ skill.name }}</h4>
+                            <span class="proficiency-badge">{{ skill.proficiency }}/10</span>
+                        </div>
+                        <div class="skill-category">{{ skill.category }}</div>
+                        <div class="skill-progress">
+                            <div class="progress-bar" style="width: {{ skill.proficiency * 10 }}%"></div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-state">No skills added yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="share-section">
+        <h3>Share Your Profile</h3>
+        <div class="share-options">
+            <button class="btn secondary" onclick="copyProfileLink()">
+                <i class="material-icons">link</i> Copy Profile Link
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyProfileLink() {
+    const profileLink = window.location.href;
+    navigator.clipboard.writeText(profileLink).then(() => {
+        alert('Profile link copied to clipboard!');
+    });
+}
+</script>
+{% endblock %}
