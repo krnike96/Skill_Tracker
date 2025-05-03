@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h2>Welcome, {{ current_user.username }}!</h2>
+        <a href="{{ url_for('add_skill') }}" class="btn primary">
+            <i class="material-icons">add</i> Add Skill
+        </a>
+    </div>
+
+    <div class="stats-container">
+        <div class="stat-card">
+            <h3>Total Skills</h3>
+            <p>{{ skills|length }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Average Proficiency</h3>
+            <p>
+                {% if skills %}
+                    {{ (skills|sum(attribute='proficiency') / skills|length)|round(1) }}
+                {% else %}
+                    0
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <div class="skills-list">
+        <h3>Your Skills</h3>
+        {% if skills %}
+            <div class="skills-grid">
+                {% for skill in skills %}
+                    <div class="skill-card">
+                        <div class="skill-header">
+                            <h4>{{ skill.name }}</h4>
+                            <span class="proficiency-badge">{{ skill.proficiency }}/10</span>
+                        </div>
+                        <div class="skill-category">{{ skill.category }}</div>
+                        <div class="skill-progress">
+                            <div class="progress-bar" style="width: {{ skill.proficiency * 10 }}%"></div>
+                        </div>
+                        <form action="{{ url_for('delete_skill', skill_id=skill._id) }}" method="POST" class="skill-actions">
+                            <button type="submit" class="btn danger small">
+                                <i class="material-icons">delete</i> Delete
+                            </button>
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-state">You haven't added any skills yet. <a href="{{ url_for('add_skill') }}">Add your first skill</a></p>
+        {% endif %}
+    </div>
+
+    <div class="charts-container">
+        <div class="chart-card">
+            <h3>Skill Distribution</h3>
+            <div class="chart" id="pie-chart">
+                <!-- Pie chart will be rendered here -->
+                <img src="https://quickchart.io/chart?c={type:'pie',data:{labels:['{{ categories|join("','") }}'], datasets:[{data:[{{ counts }}]}]}}" alt="Skill Distribution">
+            </div>
+        </div>
+        <div class="chart-card">
+            <h3>Proficiency Levels</h3>
+            <div class="chart" id="bar-chart">
+                <!-- Bar chart will be rendered here -->
+                <img src="https://quickchart.io/chart?c={type:'bar',data:{labels:['{{ skill_names|join("','") }}'], datasets:[{label:'Proficiency',data:[{{ proficiencies }}]}]}}" alt="Proficiency Levels">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
