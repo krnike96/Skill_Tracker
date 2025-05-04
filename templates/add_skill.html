@@ -14,16 +14,15 @@
             <div class="form-group">
                 <label for="category">Category</label>
                 <select id="category" name="category" required>
-                    <option value="Technical">Technical</option>
-                    <option value="Soft Skills">Soft Skills</option>
-                    <option value="Language">Language</option>
-                    <option value="Creative">Creative</option>
-                    <option value="Other">Other</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
                 </select>
             </div>
             <div class="form-group">
                 <label for="proficiency">Proficiency (1-10)</label>
-                <input type="range" id="proficiency" name="proficiency" min="1" max="10" value="5" oninput="proficiencyValue.value = proficiency.value">
+                <input type="range" id="proficiency" name="proficiency" min="1" max="10" value="5"
+                    oninput="proficiencyValue.value = proficiency.value">
                 <output id="proficiencyValue">5</output>
             </div>
             <div class="form-actions">

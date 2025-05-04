@@ -33,7 +33,8 @@
                         </div>
                         <div class="skill-category">{{ skill.category }}</div>
                         <div class="skill-progress">
-                            <div class="progress-bar" style="width: {{ skill.proficiency * 10 }}%"></div>
+                            <!-- Changed from style attribute to data attribute -->
+                            <div class="progress-bar" data-proficiency="{{ skill.proficiency }}"></div>
                         </div>
                     </div>
                 {% endfor %}
@@ -54,6 +55,16 @@
 </div>
 
 <script>
+// Handle progress bars
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(bar => {
+        const proficiency = bar.getAttribute('data-proficiency');
+        bar.style.width = `${proficiency * 10}%`;
+    });
+});
+
+// Handle profile link copying
 function copyProfileLink() {
     const profileLink = window.location.href;
     navigator.clipboard.writeText(profileLink).then(() => {

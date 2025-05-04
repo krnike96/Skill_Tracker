@@ -91,7 +91,29 @@ def logout():
 def dashboard():
     user_data = db.users.find_one({'_id': ObjectId(current_user.id)})
     skills = user_data.get('skills', [])
-    return render_template('dashboard.html', skills=skills)
+    
+    # Prepare data for charts
+    categories = {}
+    skill_names = []
+    proficiencies = []
+    
+    for skill in skills:
+        # Category distribution
+        if skill['category'] in categories:
+            categories[skill['category']] += 1
+        else:
+            categories[skill['category']] = 1
+        
+        # Proficiency data
+        skill_names.append(skill['name'])
+        proficiencies.append(skill['proficiency'])
+    
+    return render_template('dashboard.html', 
+                         skills=skills,
+                         categories=categories.keys(),
+                         counts=categories.values(),
+                         skill_names=skill_names,
+                         proficiencies=proficiencies)
 
 @app.route('/add_skill', methods=['GET', 'POST'])
 @login_required
@@ -111,8 +133,19 @@ def add_skill():
         )
         flash('Skill added successfully', 'success')
         return redirect(url_for('dashboard'))
+    categories = [
+        'Programming Languages',
+        'Frameworks',
+        'Databases',
+        'DevOps',
+        'Design',
+        'Project Management',
+        'Communication',
+        'Languages',
+        'Other'
+    ]
     
-    return render_template('add_skill.html')
+    return render_template('add_skill.html',categories=categories)
 
 @app.route('/delete_skill/<skill_id>', methods=['POST'])
 @login_required
