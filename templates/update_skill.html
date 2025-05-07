@@ -5,29 +5,34 @@
 {% block content %}
 <div class="form-container">
     <div class="card">
-        <h2>Update Skill</h2>
-        <form method="POST" action="{{ url_for('update_skill', skill_id=skill._id) }}">
+        <h2>Update {{ skill.name }}</h2>
+        <form method="POST">
             <div class="form-group">
-                <label for="skill_name">Skill Name</label>
-                <input type="text" id="skill_name" name="skill_name" value="{{ skill.name }}" required>
+                <label>Skill Name</label>
+                <input type="text" name="skill_name" value="{{ skill.name }}" required>
             </div>
             <div class="form-group">
-                <label for="category">Category</label>
-                <select id="category" name="category" required>
-                    <option value="Programming Languages" {% if skill.category == 'Programming Languages' %}selected{% endif %}>Programming Languages</option>
-                    <option value="Frameworks" {% if skill.category == 'Frameworks' %}selected{% endif %}>Frameworks</option>
-                    <option value="DevOps" {% if skill.category == 'DevOps' %}selected{% endif %}>DevOps</option>
-                    <option value="Soft Skills" {% if skill.category == 'Soft Skills' %}selected{% endif %}>Soft Skills</option>
+                <label>Category</label>
+                <select name="category" required>
+                    <option value="Programming Languages" {% if skill.category == 'Programming Languages' %}selected{% endif %}>
+                        Programming Languages
+                    </option>
+                    <option value="Frameworks" {% if skill.category == 'Frameworks' %}selected{% endif %}>
+                        Frameworks
+                    </option>
+                    <option value="Other" {% if skill.category == 'Other' %}selected{% endif %}>
+                        Other
+                    </option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="proficiency">Proficiency (1-10)</label>
-                <input type="range" id="proficiency" name="proficiency" min="1" max="10" 
-                       value="{{ skill.proficiency }}" oninput="proficiencyValue.value = proficiency.value">
-                <output id="proficiencyValue">{{ skill.proficiency }}</output>
+                <label>Proficiency ({{ skill.proficiency }}/10)</label>
+                <input type="range" name="proficiency" min="1" max="10" 
+                       value="{{ skill.proficiency }}" oninput="this.nextElementSibling.value = this.value">
+                <output>{{ skill.proficiency }}</output>
             </div>
             <div class="form-actions">
-                <button type="submit" class="btn primary">Update Skill</button>
+                <button type="submit" class="btn primary">Update</button>
                 <a href="{{ url_for('dashboard') }}" class="btn secondary">Cancel</a>
             </div>
         </form>

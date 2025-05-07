@@ -5,8 +5,16 @@ from bson.objectid import ObjectId
 import bcrypt
 from config import Config, DevelopmentConfig
 import os
+from werkzeug.routing import BaseConverter
+
+class ObjectIdConverter(BaseConverter):
+    def to_python(self, value):
+        return ObjectId(value)
+    def to_url(self, value):
+        return str(value)
 
 app = Flask(__name__)
+app.url_map.converters['ObjectId'] = ObjectIdConverter
 app.config.from_object(DevelopmentConfig if os.environ.get('FLASK_ENV') == 'development' else Config)
 
 # MongoDB setup
@@ -97,7 +105,7 @@ def dashboard():
     for skill in skills:
         categories[skill['category']] = categories.get(skill['category'], 0) + 1
     
-    # Generate chart URLs - FIXED VERSION
+    # Generate chart URLs
     pie_chart_data = {
         'type': 'pie',
         'data': {
@@ -125,6 +133,7 @@ def dashboard():
                          skills=skills,
                          pie_chart_url=pie_chart_url,
                          bar_chart_url=bar_chart_url)
+
 @app.route('/add_skill', methods=['GET', 'POST'])
 @login_required
 def add_skill():
@@ -136,6 +145,7 @@ def add_skill():
         db.users.update_one(
             {'_id': ObjectId(current_user.id)},
             {'$push': {'skills': {
+                '_id': ObjectId(),  # Critical fix - ensures all skills have IDs
                 'name': skill_name,
                 'proficiency': proficiency,
                 'category': category
@@ -143,6 +153,7 @@ def add_skill():
         )
         flash('Skill added successfully', 'success')
         return redirect(url_for('dashboard'))
+    
     categories = [
         'Programming Languages',
         'Frameworks',
@@ -154,49 +165,44 @@ def add_skill():
         'Languages',
         'Other'
     ]
-    
-    return render_template('add_skill.html',categories=categories)
+    return render_template('add_skill.html', categories=categories)
 
-# Update Skill Route
-@app.route('/update_skill/<skill_id>', methods=['GET', 'POST'])
+@app.route('/update_skill/<ObjectId:skill_id>', methods=['GET', 'POST'])
 @login_required
 def update_skill(skill_id):
     if request.method == 'POST':
-        # Get form data
         skill_name = request.form['skill_name']
         proficiency = int(request.form['proficiency'])
         category = request.form['category']
         
-        # Update in MongoDB
         db.users.update_one(
-            {'_id': ObjectId(current_user.id), 'skills._id': ObjectId(skill_id)},
+            {'_id': ObjectId(current_user.id), 'skills._id': skill_id},
             {'$set': {
                 'skills.$.name': skill_name,
                 'skills.$.proficiency': proficiency,
                 'skills.$.category': category
             }}
         )
-        flash('Skill updated successfully!', 'success')
+        flash('Skill updated!', 'success')
         return redirect(url_for('dashboard'))
     
-    # GET request - show edit form
-    skill = db.users.find_one(
-        {'_id': ObjectId(current_user.id), 'skills._id': ObjectId(skill_id)},
-        {'skills.$': 1}
-    )['skills'][0]
-    
+    skill_data = db.users.find_one(
+        {'_id': ObjectId(current_user.id)},
+        {'skills': {'$elemMatch': {'_id': skill_id}}}
+    )
+    skill = skill_data['skills'][0] if skill_data and 'skills' in skill_data else None
     return render_template('update_skill.html', skill=skill)
 
-# Delete Skill Route (updated with confirmation)
-@app.route('/delete_skill/<skill_id>', methods=['POST'])
+@app.route('/delete_skill/<ObjectId:skill_id>', methods=['POST'])
 @login_required
 def delete_skill(skill_id):
     db.users.update_one(
         {'_id': ObjectId(current_user.id)},
-        {'$pull': {'skills': {'_id': ObjectId(skill_id)}}}
+        {'$pull': {'skills': {'_id': skill_id}}}
     )
-    flash('Skill deleted successfully!', 'success')
+    flash('Skill deleted!', 'success')
     return redirect(url_for('dashboard'))
+
 @app.route('/profile')
 @login_required
 def profile():
@@ -210,7 +216,6 @@ def export_profile():
     user_data = db.users.find_one({'_id': ObjectId(current_user.id)})
     skills = user_data.get('skills', [])
     
-    # Create a simplified profile for export
     profile_data = {
         'username': user_data['username'],
         'email': user_data['email'],
@@ -223,7 +228,6 @@ def export_profile():
             for skill in skills
         ]
     }
-    
     return jsonify(profile_data)
 
 if __name__ == '__main__':

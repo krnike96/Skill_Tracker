@@ -111,7 +111,7 @@ body {
     font-size: 16px;
     cursor: pointer;
     text-decoration: none;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
 }
 
 .btn.primary {
@@ -121,6 +121,8 @@ body {
 
 .btn.primary:hover {
     background-color: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .btn.secondary {
@@ -130,6 +132,8 @@ body {
 
 .btn.secondary:hover {
     opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .btn.danger {
@@ -139,11 +143,21 @@ body {
 
 .btn.danger:hover {
     opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .btn.small {
     padding: 5px 10px;
     font-size: 14px;
+}
+
+/* NEW: Button group styling */
+.skill-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 10px;
 }
 
 .auth-link {
@@ -231,6 +245,12 @@ body {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.skill-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
 .skill-header {
@@ -270,11 +290,7 @@ body {
     height: 100%;
     background: var(--primary-color);
     border-radius: 4px;
-}
-
-.skill-actions {
-    display: flex;
-    justify-content: flex-end;
+    transition: width 0.5s ease;
 }
 
 .empty-state {
@@ -320,6 +336,7 @@ body {
 .chart img {
     max-width: 100%;
     height: auto;
+    border-radius: 4px;
 }
 
 /* Form Container */
@@ -382,9 +399,35 @@ body {
 }
 
 /* Range Input */
+i/* Range Input */
 input[type="range"] {
+    -webkit-appearance: none;  /* Needed for Safari/Chrome */
+    appearance: none;          /* Standard property */
     width: 100%;
+    height: 8px;
+    background: #ddd;
+    border-radius: 4px;
+    outline: none;             /* Corrected from 'outLine' */
     margin: 10px 0;
+}
+
+/* Thumb Styles */
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
 }
 
 output {
@@ -397,6 +440,18 @@ output {
 .material-icons {
     vertical-align: middle;
     margin-right: 5px;
+    font-size: 18px;
+}
+
+/* NEW: Update Skill Form Styles */
+.update-form .form-group {
+    margin-bottom: 15px;
+}
+
+.update-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
 }
 
 /* Responsive */
@@ -426,4 +481,30 @@ output {
     .app-header nav a {
         margin-left: 0;
     }
+
+    /* NEW: Stack buttons on mobile */
+    .skill-actions {
+        flex-direction: column;
+    }
+
+    .btn.small {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+}
+
+/* NEW: Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.skill-card {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* NEW: Button focus states */
+.btn:focus {
+    outline: 2px solid var(--primary-light);
+    outline-offset: 2px;
 }

@@ -43,13 +43,15 @@
                             <div class="progress-bar" data-proficiency="{{ skill.proficiency }}"></div>
                         </div>
                         <div class="skill-actions">
-                            <!-- Update Button -->
-                            <a href="{{ url_for('update_skill', skill_id=skill._id) }}" class="btn primary small">
-                                <i class="material-icons">edit</i> Update
+                            <!-- UPDATE Button -->
+                            <a href="{{ url_for('update_skill', skill_id=skill._id|string) }}" 
+                               class="btn primary small">
+                               <i class="material-icons">edit</i> Update
                             </a>
                             
-                            <!-- Delete Button -->
-                            <form action="{{ url_for('delete_skill', skill_id=skill._id) }}" method="POST" onsubmit="return confirmDelete()">
+                            <!-- DELETE Button -->
+                            <form action="{{ url_for('delete_skill', skill_id=skill._id|string) }}" method="POST" 
+                                  onsubmit="return confirm('Delete this skill?');">
                                 <button type="submit" class="btn danger small">
                                     <i class="material-icons">delete</i> Delete
                                 </button>
