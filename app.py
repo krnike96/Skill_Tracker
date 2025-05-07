@@ -157,6 +157,37 @@ def add_skill():
     
     return render_template('add_skill.html',categories=categories)
 
+# Update Skill Route
+@app.route('/update_skill/<skill_id>', methods=['GET', 'POST'])
+@login_required
+def update_skill(skill_id):
+    if request.method == 'POST':
+        # Get form data
+        skill_name = request.form['skill_name']
+        proficiency = int(request.form['proficiency'])
+        category = request.form['category']
+        
+        # Update in MongoDB
+        db.users.update_one(
+            {'_id': ObjectId(current_user.id), 'skills._id': ObjectId(skill_id)},
+            {'$set': {
+                'skills.$.name': skill_name,
+                'skills.$.proficiency': proficiency,
+                'skills.$.category': category
+            }}
+        )
+        flash('Skill updated successfully!', 'success')
+        return redirect(url_for('dashboard'))
+    
+    # GET request - show edit form
+    skill = db.users.find_one(
+        {'_id': ObjectId(current_user.id), 'skills._id': ObjectId(skill_id)},
+        {'skills.$': 1}
+    )['skills'][0]
+    
+    return render_template('update_skill.html', skill=skill)
+
+# Delete Skill Route (updated with confirmation)
 @app.route('/delete_skill/<skill_id>', methods=['POST'])
 @login_required
 def delete_skill(skill_id):
@@ -164,9 +195,8 @@ def delete_skill(skill_id):
         {'_id': ObjectId(current_user.id)},
         {'$pull': {'skills': {'_id': ObjectId(skill_id)}}}
     )
-    flash('Skill deleted successfully', 'success')
+    flash('Skill deleted successfully!', 'success')
     return redirect(url_for('dashboard'))
-
 @app.route('/profile')
 @login_required
 def profile():
