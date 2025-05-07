@@ -92,29 +92,39 @@ def dashboard():
     user_data = db.users.find_one({'_id': ObjectId(current_user.id)})
     skills = user_data.get('skills', [])
     
-    # Prepare data for charts
+    # Calculate category distribution for pie chart
     categories = {}
-    skill_names = []
-    proficiencies = []
-    
     for skill in skills:
-        # Category distribution
-        if skill['category'] in categories:
-            categories[skill['category']] += 1
-        else:
-            categories[skill['category']] = 1
-        
-        # Proficiency data
-        skill_names.append(skill['name'])
-        proficiencies.append(skill['proficiency'])
+        categories[skill['category']] = categories.get(skill['category'], 0) + 1
     
-    return render_template('dashboard.html', 
-                         skills=skills,
-                         categories=categories.keys(),
-                         counts=categories.values(),
-                         skill_names=skill_names,
-                         proficiencies=proficiencies)
+    # Generate chart URLs - FIXED VERSION
+    pie_chart_data = {
+        'type': 'pie',
+        'data': {
+            'labels': list(categories.keys()),
+            'datasets': [{
+                'data': list(categories.values())
+            }]
+        }
+    }
+    pie_chart_url = f"https://quickchart.io/chart?c={pie_chart_data}"
 
+    bar_chart_data = {
+        'type': 'bar',
+        'data': {
+            'labels': [s['name'] for s in skills],
+            'datasets': [{
+                'label': 'Proficiency',
+                'data': [s['proficiency'] for s in skills]
+            }]
+        }
+    }
+    bar_chart_url = f"https://quickchart.io/chart?c={bar_chart_data}"
+    
+    return render_template('dashboard.html',
+                         skills=skills,
+                         pie_chart_url=pie_chart_url,
+                         bar_chart_url=bar_chart_url)
 @app.route('/add_skill', methods=['GET', 'POST'])
 @login_required
 def add_skill():

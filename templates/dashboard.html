@@ -40,10 +40,9 @@
                         </div>
                         <div class="skill-category">{{ skill.category }}</div>
                         <div class="skill-progress">
-                            <!-- Changed from style attribute to data attribute -->
                             <div class="progress-bar" data-proficiency="{{ skill.proficiency }}"></div>
                         </div>
-                        <form action="{{ url_for('delete_skill', skill_id=skill._id) }}" method="POST" class="skill-actions">
+                        <form action="{{ url_for('delete_skill', skill_id=skill._id) }}" method="POST" class="skill-actions" onsubmit="return confirmDelete()">
                             <button type="submit" class="btn danger small">
                                 <i class="material-icons">delete</i> Delete
                             </button>
@@ -59,23 +58,21 @@
     <div class="charts-container">
         <div class="chart-card">
             <h3>Skill Distribution</h3>
-            <div class="chart" id="pie-chart">
-                <!-- Pie chart will be rendered here -->
-                <img src="https://quickchart.io/chart?c={type:'pie',data:{labels:['{{ categories|join("','") }}'], datasets:[{data:[{{ counts }}]}]}}" alt="Skill Distribution">
+            <div class="chart">
+                <img src="{{ pie_chart_url }}" alt="Skill Distribution">
             </div>
         </div>
         <div class="chart-card">
             <h3>Proficiency Levels</h3>
-            <div class="chart" id="bar-chart">
-                <!-- Bar chart will be rendered here -->
-                <img src="https://quickchart.io/chart?c={type:'bar',data:{labels:['{{ skill_names|join("','") }}'], datasets:[{label:'Proficiency',data:[{{ proficiencies }}]}]}}" alt="Proficiency Levels">
+            <div class="chart">
+                <img src="{{ bar_chart_url }}" alt="Proficiency Levels">
             </div>
         </div>
     </div>
 </div>
 
-<!-- Add this script at the bottom to handle progress bars -->
 <script>
+    // Handle progress bars
     document.addEventListener('DOMContentLoaded', function() {
         const progressBars = document.querySelectorAll('.progress-bar');
         progressBars.forEach(bar => {
@@ -83,5 +80,10 @@
             bar.style.width = `${proficiency * 10}%`;
         });
     });
+
+    // Delete confirmation
+    function confirmDelete() {
+        return confirm('Are you sure you want to delete this skill?');
+    }
 </script>
 {% endblock %}
