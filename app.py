@@ -138,21 +138,22 @@ def dashboard():
 @login_required
 def add_skill():
     if request.method == 'POST':
-        skill_name = request.form['skill_name']
-        proficiency = int(request.form['proficiency'])
-        category = request.form['category']
-        
-        db.users.update_one(
-            {'_id': ObjectId(current_user.id)},
-            {'$push': {'skills': {
-                '_id': ObjectId(),  # Critical fix - ensures all skills have IDs
-                'name': skill_name,
-                'proficiency': proficiency,
-                'category': category
-            }}}
-        )
-        flash('Skill added successfully', 'success')
-        return redirect(url_for('dashboard'))
+        try:
+            db.users.update_one(
+                {'_id': ObjectId(current_user.id)},
+                {'$push': {'skills': {
+                    '_id': ObjectId(),  # This is REQUIRED
+                    'name': request.form['skill_name'],
+                    'proficiency': int(request.form['proficiency']),
+                    'category': request.form['category']
+                }}},
+                upsert=False  # Explicitly set upsert to false
+            )
+            flash('Skill added successfully!', 'success')
+            return redirect(url_for('dashboard'))
+        except Exception as e:
+            flash(f'Error adding skill: {str(e)}', 'error')
+            return redirect(url_for('add_skill'))
     
     categories = [
         'Programming Languages',
@@ -170,37 +171,49 @@ def add_skill():
 @app.route('/update_skill/<ObjectId:skill_id>', methods=['GET', 'POST'])
 @login_required
 def update_skill(skill_id):
+    if not skill_id:  # Handle invalid IDs
+        flash('Invalid skill ID', 'error')
+        return redirect(url_for('dashboard'))
+
     if request.method == 'POST':
-        skill_name = request.form['skill_name']
-        proficiency = int(request.form['proficiency'])
-        category = request.form['category']
-        
         db.users.update_one(
             {'_id': ObjectId(current_user.id), 'skills._id': skill_id},
             {'$set': {
-                'skills.$.name': skill_name,
-                'skills.$.proficiency': proficiency,
-                'skills.$.category': category
+                'skills.$.name': request.form['skill_name'],
+                'skills.$.proficiency': int(request.form['proficiency']),
+                'skills.$.category': request.form['category']
             }}
         )
-        flash('Skill updated!', 'success')
+        flash('Skill updated successfully', 'success')
         return redirect(url_for('dashboard'))
     
-    skill_data = db.users.find_one(
-        {'_id': ObjectId(current_user.id)},
-        {'skills': {'$elemMatch': {'_id': skill_id}}}
+    user_data = db.users.find_one(
+        {'_id': ObjectId(current_user.id), 'skills._id': skill_id},
+        {'skills.$': 1}
     )
-    skill = skill_data['skills'][0] if skill_data and 'skills' in skill_data else None
-    return render_template('update_skill.html', skill=skill)
+    if not user_data or not user_data.get('skills'):
+        flash('Skill not found', 'error')
+        return redirect(url_for('dashboard'))
+    
+    return render_template('update_skill.html', skill=user_data['skills'][0])
 
 @app.route('/delete_skill/<ObjectId:skill_id>', methods=['POST'])
 @login_required
 def delete_skill(skill_id):
-    db.users.update_one(
+    if not skill_id:
+        flash('Invalid skill ID', 'error')
+        return redirect(url_for('dashboard'))
+        
+    result = db.users.update_one(
         {'_id': ObjectId(current_user.id)},
         {'$pull': {'skills': {'_id': skill_id}}}
     )
-    flash('Skill deleted!', 'success')
+    
+    if result.modified_count > 0:
+        flash('Skill deleted successfully', 'success')
+    else:
+        flash('Skill not found', 'error')
+    
     return redirect(url_for('dashboard'))
 
 @app.route('/profile')
